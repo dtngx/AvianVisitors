@@ -56,7 +56,7 @@
   // Each view's title text. The shared static-head shows one of these
   // based on the current view; identical adjacent values mean the title
   // stays put with no fade (collage and stats both say Heard Recently).
-  var VIEW_TITLES = ['Heard Recently', 'Heard Recently', 'Avian Visitors'];
+  var VIEW_TITLES = ['Kürzlich gehört', 'Kürzlich gehört', 'Gefiederte Besucher'];
   var staticHead = document.querySelector('.static-head');
   var staticTitle = document.getElementById('staticTitle');
   function setTitleForView(i) {
@@ -413,7 +413,7 @@
   function renderCollage(items, animate) {
     collage.innerHTML = '';
     if (!items.length) {
-      collage.innerHTML = '<p class="empty">no birds heard in this window.</p>';
+      collage.innerHTML = '<p class="empty">In diesem Zeitfenster keine Vögel gehört.</p>';
       return;
     }
     var W = collage.clientWidth, H = collage.clientHeight;
@@ -727,7 +727,7 @@
       if (hit) {
         var s = hit.data;
         var n = +s.n || 0;
-        var noun = (n === 1) ? 'call' : 'calls';
+        var noun = (n === 1) ? 'Ruf' : 'Rufe';
         tip.innerHTML = '<span class="ct-name">' + (s.com || s.sci) + '</span>'
           + '<span class="ct-w"> - </span>'
           + '<span class="ct-n">' + fmtN(n) + '</span>'
@@ -815,11 +815,11 @@
   // a bare "window" with the span it actually covers. Thresholds match
   // the winPick buttons (1H / 12H / 24H / 7D / ALL).
   function windowLabel(h) {
-    if (h <= 1) return 'this hour';
-    if (h <= 12) return 'past 12h';
-    if (h <= 24) return 'today';
-    if (h <= 168) return 'this week';
-    return 'all time';
+    if (h <= 1) return 'diese Stunde';
+    if (h <= 12) return 'letzte 12 Std.';
+    if (h <= 24) return 'heute';
+    if (h <= 168) return 'diese Woche';
+    return 'gesamt';
   }
 
   // ---- Live Pi data layer ----
@@ -892,7 +892,7 @@
     if (!tl) return;
     var all = ((DATA.recent && DATA.recent.species) || []).slice();
     if (!all.length) {
-      tl.innerHTML = '<div class="stats-tl-empty">no detections in this window</div>';
+      tl.innerHTML = '<div class="stats-tl-empty">keine Erkennungen in diesem Zeitfenster</div>';
       return;
     }
 
@@ -952,8 +952,8 @@
       var d = new Date(ms);
       var p2 = function (n) { return n < 10 ? '0' + n : '' + n; };
       if (currentHours <= 36) return p2(d.getHours()) + ':' + p2(d.getMinutes());
-      if (currentHours <= 75 * 24) return (d.getMonth() + 1) + '/' + d.getDate();
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      if (currentHours <= 75 * 24) return d.getDate() + '.' + (d.getMonth() + 1) + '.';
+      return d.toLocaleDateString('de-DE', { month: 'short', day: 'numeric' });
     }
 
     // Faint gridlines at every column boundary. Start at gi=1: the gi=0
@@ -978,7 +978,7 @@
     });
 
     var note = trimmed
-      ? '<div class="stats-tl-cap">' + C + ' most-heard of ' + all.length + '</div>'
+      ? '<div class="stats-tl-cap">' + C + ' häufigste von ' + all.length + '</div>'
       : '';
     tl.innerHTML =
       '<div class="stats-tl-yaxis">' + yaxis + '</div>'
@@ -1030,10 +1030,10 @@
     var week_det = (stats.week && stats.week.detections) || 0;
     var all_det = (stats.totals && stats.totals.detections) || 0;
     document.getElementById('statsByPeriod').innerHTML =
-        liRow('NOW',   'last hour',   fmtN(last_hour))
-      + liRow('TODAY', 'today',       fmtN(today_det))
-      + liRow('WEEK',  'last 7 days', fmtN(week_det))
-      + liRow('ALL',   'all time',    fmtN(all_det));
+        liRow('JETZT', 'letzte Stunde', fmtN(last_hour))
+      + liRow('HEUTE', 'heute',         fmtN(today_det))
+      + liRow('WOCHE', 'letzte 7 Tage', fmtN(week_det))
+      + liRow('ALLE',  'gesamt',        fmtN(all_det));
 
     // Top Species - top 5 species in the current window. ./avian/api/birdnet-api.php?action=recent
     // already returns species sorted by last_seen DESC; re-sort by count.
@@ -1043,9 +1043,9 @@
       .slice(0, 5);
     document.getElementById('statsTopSpec').innerHTML = ranked.length
       ? ranked.map(function (s, i) { return liRow(pad(i + 1), s.com, fmtN(+s.n), s.sci); }).join('')
-      : liRow('-', 'no detections in window', '');
+      : liRow('-', 'keine Erkennungen im Zeitfenster', '');
     document.getElementById('statsTopSpecCap').textContent =
-      'most-heard, ' + windowLabel(currentHours);
+      'am häufigsten, ' + windowLabel(currentHours);
 
     // First Detections - newest additions to the life list, with a
     // "Xd ago" label computed from first_seen.
@@ -1057,11 +1057,11 @@
           var label = '-';
           if (!isNaN(t)) {
             var daysAgo = Math.floor((now - t) / 86400000);
-            label = daysAgo === 0 ? 'today' : daysAgo + 'd ago';
+            label = daysAgo === 0 ? 'heute' : 'vor ' + daysAgo + ' T';
           }
           return liRow(label, s.com, '', s.sci);
         }).join('')
-      : liRow('-', 'no detections yet', '');
+      : liRow('-', 'noch keine Erkennungen', '');
   }
 
   // ---- Atlas: field-guide card grid ----
@@ -1108,8 +1108,8 @@
 
     if (!lifelist.length) {
       grid.innerHTML = '<div class="atlas-empty">' +
-        '<p>No birds detected yet.</p>' +
-        '<p class="hint">The atlas fills up as BirdNET-Pi identifies new species.</p>' +
+        '<p>Noch keine Vögel erkannt.</p>' +
+        '<p class="hint">Der Atlas füllt sich, sobald BirdNET-Pi neue Arten erkennt.</p>' +
         '</div>';
       return;
     }
@@ -1122,8 +1122,8 @@
       : lifelist.filter(function (s) { return (winBySci[s.sci] || 0) > 0; });
     if (!filtered.length) {
       grid.innerHTML = '<div class="atlas-empty">' +
-        '<p>No detections in this window.</p>' +
-        '<p class="hint">Try a longer time window.</p>' +
+        '<p>Keine Erkennungen in diesem Zeitfenster.</p>' +
+        '<p class="hint">Versuche ein längeres Zeitfenster.</p>' +
         '</div>';
       return;
     }
@@ -1163,12 +1163,12 @@
       // all-time count - collapse to a single stat rather than print the
       // same number twice. Otherwise label the count with its span.
       var statRows = currentHours >= 1000000
-        ? '<div><span class="n">' + fmtNK(total) + '</span><span class="lbl-inline">all time</span></div>'
+        ? '<div><span class="n">' + fmtNK(total) + '</span><span class="lbl-inline">gesamt</span></div>'
         : '<div><span class="n">' + fmtNK(win) + '</span><span class="lbl-inline">' + windowLabel(currentHours) + '</span></div>'
-          + '<div><span class="n">' + fmtNK(total) + '</span><span class="lbl-inline">all time</span></div>';
+          + '<div><span class="n">' + fmtNK(total) + '</span><span class="lbl-inline">gesamt</span></div>';
       return ''
         + '<article class="bird-card" data-sci="' + s.sci + '" data-audio="' + audioSrc + '">'
-        +   (isLifer ? '<span class="lifer-badge" title="new to the life list in this window">lifer</span>' : '')
+        +   (isLifer ? '<span class="lifer-badge" title="neu in der Lebensliste in diesem Zeitfenster">neu</span>' : '')
         +   '<div class="stat">' + statRows + '</div>'
         +   '<div class="img-wrap">'
         +     '<img loading="lazy" decoding="async" src="' + sketchSrc + '" alt="' + s.com + '">'
@@ -1177,8 +1177,8 @@
         +   '<div class="sci">' + s.sci + '</div>'
         +   '<div class="spectro-wrap" aria-hidden="true"></div>'
         +   '<div class="actions">'
-        +     '<button type="button" class="chip play" data-action="play" aria-label="play recording">'
-        +       ICON_PLAY + '<span>play</span>'
+        +     '<button type="button" class="chip play" data-action="play" aria-label="Aufnahme abspielen">'
+        +       ICON_PLAY + '<span>Hören</span>'
         +     '</button>'
         +     '<a class="chip ext" href="' + wikiUrl(s.sci) + '" target="_blank" rel="noopener" aria-label="Wikipedia">wiki</a>'
         +     '<a class="chip ext" href="' + ebirdUrl(s.sci) + '" target="_blank" rel="noopener" aria-label="eBird">ebird</a>'
@@ -1199,22 +1199,22 @@
       btn.setAttribute('data-state', state);
       if (state === 'playing') {
         btn.setAttribute('data-active', 'true');
-        btn.innerHTML = ICON_PAUSE + '<span>stop</span>';
+        btn.innerHTML = ICON_PAUSE + '<span>Stopp</span>';
       } else if (state === 'loading') {
         btn.setAttribute('data-active', 'true');
         btn.innerHTML = ICON_PLAY + '<span>...</span>';
       } else if (state === 'missing') {
         btn.setAttribute('data-active', 'false');
-        btn.innerHTML = ICON_PLAY + '<span>no audio</span>';
+        btn.innerHTML = ICON_PLAY + '<span>kein Audio</span>';
         setTimeout(function () {
           if (btn.getAttribute('data-state') === 'missing') {
-            btn.innerHTML = ICON_PLAY + '<span>play</span>';
+            btn.innerHTML = ICON_PLAY + '<span>Hören</span>';
             btn.setAttribute('data-state', 'idle');
           }
         }, 2200);
       } else {
         btn.setAttribute('data-active', 'false');
-        btn.innerHTML = ICON_PLAY + '<span>play</span>';
+        btn.innerHTML = ICON_PLAY + '<span>Hören</span>';
       }
     }
     function clearProgressOn(card) {
@@ -1462,14 +1462,14 @@
       if (r.status === 200) {
         return r.json().then(function (j) { renderMenu(j.items || []); });
       } else if (r.status === 401) {
-        lockHint.textContent = 'wrong password.';
+        lockHint.textContent = 'Falsches Passwort.';
         lockHint.classList.add('lock-err');
       } else {
-        lockHint.textContent = 'auth unavailable.';
+        lockHint.textContent = 'Authentifizierung nicht verfügbar.';
         lockHint.classList.add('lock-err');
       }
     }).catch(function () {
-      lockHint.textContent = 'network error.';
+      lockHint.textContent = 'Netzwerkfehler.';
       lockHint.classList.add('lock-err');
     });
   });
@@ -1874,16 +1874,16 @@
     if (isNaN(date.getTime())) return d + ' ' + (t || '');
     var now = Date.now();
     var ago = Math.floor((now - date.getTime()) / 1000);
-    if (ago < 60) return ago + 's ago';
-    if (ago < 3600) return Math.floor(ago / 60) + 'm ago';
-    if (ago < 86400) return Math.floor(ago / 3600) + 'h ago';
-    return Math.floor(ago / 86400) + 'd ago';
+    if (ago < 60) return 'vor ' + ago + 's';
+    if (ago < 3600) return 'vor ' + Math.floor(ago / 60) + 'm';
+    if (ago < 86400) return 'vor ' + Math.floor(ago / 3600) + 'h';
+    return 'vor ' + Math.floor(ago / 86400) + ' T';
   }
   function fmtDateLine(d, t) {
     if (!d) return '';
     try {
       var date = new Date(d + 'T' + (t || '00:00:00'));
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+      return date.toLocaleDateString('de-DE', { month: 'short', day: 'numeric' }) +
         ' · ' + (t ? t.slice(0, 5) : '');
     } catch (e) { return d + ' ' + (t || ''); }
   }
@@ -1895,10 +1895,10 @@
       if (!isNaN(t)) days = Math.max(1, Math.ceil((Date.now() - t) / 86400000));
     }
     var perDay = total / days;
-    if (perDay >= 5) return 'common';
-    if (perDay >= 1) return 'regular';
-    if (perDay >= 0.2) return 'occasional';
-    return 'rare';
+    if (perDay >= 5) return 'häufig';
+    if (perDay >= 1) return 'regelmäßig';
+    if (perDay >= 0.2) return 'gelegentlich';
+    return 'selten';
   }
   // rAF-driven cursor smoothing. timeupdate fires ~4Hz which feels
   // janky; we sample audio.currentTime every animation frame and
@@ -2045,9 +2045,9 @@
     document.getElementById('modalFirstSeen').textContent = '-';
     document.getElementById('modalRarity').textContent = '-';
     document.getElementById('modalRarity').classList.remove('rare');
-    document.getElementById('modalDesc').textContent = 'Loading description...';
+    document.getElementById('modalDesc').textContent = 'Beschreibung wird geladen...';
     document.getElementById('modalDesc').classList.add('placeholder');
-    document.getElementById('modalRecordings').innerHTML = '<li class="rec-empty">Loading recordings...</li>';
+    document.getElementById('modalRecordings').innerHTML = '<li class="rec-empty">Aufnahmen werden geladen...</li>';
     document.getElementById('modalRecCount').textContent = '';
     document.getElementById('modalWiki').href = wikiUrl(sci);
     document.getElementById('modalEbird').href = ebirdUrl(sci);
@@ -2082,26 +2082,26 @@
       var rar = rarityLabel(+s.total || 0, s.first_seen);
       var rarEl = document.getElementById('modalRarity');
       rarEl.textContent = rar;
-      if (rar === 'rare') rarEl.classList.add('rare');
+      if (rar === 'selten') rarEl.classList.add('rare');
       var dets = j.detections || [];
-      document.getElementById('modalRecCount').textContent = dets.length + ' captured';
+      document.getElementById('modalRecCount').textContent = dets.length + ' aufgenommen';
       document.getElementById('modalRecordings').innerHTML = dets.length
         ? dets.map(function (d) {
             return '<li class="rec-row" data-file="' + (d.file || '') + '" data-date="' + (d.d || '') + '">'
-              + '<button class="play" type="button" aria-label="play">' + ICON_PLAY + '</button>'
+              + '<button class="play" type="button" aria-label="abspielen">' + ICON_PLAY + '</button>'
               + '<span class="when">' + fmtRecTime(d.d, d.t) + '<small>' + fmtDateLine(d.d, d.t) + '</small></span>'
               + '<span class="conf">' + ((+d.conf || 0) * 100).toFixed(0) + '%</span>'
               + '<div class="rec-spectro" aria-hidden="true">'
-              +   '<div class="rec-spectro-loading">loading spectrogram...</div>'
+              +   '<div class="rec-spectro-loading">Spektrogramm wird geladen...</div>'
               +   '<div class="rec-spectro-played"></div>'
               +   '<div class="rec-spectro-cursor"></div>'
-              +   '<div class="rec-spectro-scrub" role="slider" aria-label="scrub" tabindex="0"></div>'
+              +   '<div class="rec-spectro-scrub" role="slider" aria-label="spulen" tabindex="0"></div>'
               + '</div>'
               + '</li>';
           }).join('')
-        : '<li class="rec-empty">No recordings yet.</li>';
+        : '<li class="rec-empty">Noch keine Aufnahmen.</li>';
     }).catch(function () {
-      document.getElementById('modalRecordings').innerHTML = '<li class="rec-empty">Failed to load recordings.</li>';
+      document.getElementById('modalRecordings').innerHTML = '<li class="rec-empty">Aufnahmen konnten nicht geladen werden.</li>';
     });
 
     // Wikipedia summary (description + genus / family).
@@ -2112,11 +2112,11 @@
         });
     loadWiki.then(function (j) {
       var desc = document.getElementById('modalDesc');
-      desc.textContent = j.extract || 'No description available.';
+      desc.textContent = j.extract || 'Keine Beschreibung verfügbar.';
       desc.classList.toggle('placeholder', !j.extract);
     }).catch(function () {
       var desc = document.getElementById('modalDesc');
-      desc.textContent = 'No description available.';
+      desc.textContent = 'Keine Beschreibung verfügbar.';
       desc.classList.add('placeholder');
     });
   }

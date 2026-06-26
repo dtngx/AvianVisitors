@@ -17,8 +17,8 @@ shoot = true
 hours = 24             # window shown on the frame
 
 # --- Titles and look (used when this Pi renders, i.e. shoot = true) ----------
-shoot_title = "Avian Visitors"
-shoot_subtitle = "Heard Today"
+shoot_title = "Gefiederte Besucher"
+shoot_subtitle = "Heute gehört"
 # shoot_headline_px = 42
 # shoot_eyebrow_px = 18
 # shoot_lowercase = false
