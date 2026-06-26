@@ -263,8 +263,8 @@ def main():
         _httpd, port = _serve_frontend(front)
         url = f"http://127.0.0.1:{port}/"
         cutout_base = RAW_ILLUSTRATIONS
-        title = title or "Avian Visitors"
-        subtitle = subtitle or "Heard Today"
+        title = title or "Gefiederte Besucher"
+        subtitle = subtitle or "Heute gehört"
     # BirdWeather's 7-day counts are flatter than a mic's, so they need a steeper
     # exponent to get the same hero-bird hierarchy and collage shape.
     count_exp = a.count_exp if a.count_exp is not None else (1.0 if a.bird_weather else 0.4)

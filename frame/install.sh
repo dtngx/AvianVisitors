@@ -119,8 +119,8 @@ elif [ "$MODE" = local ]; then
 # This Pi screenshots birdnet.local itself, so there is nothing else to set up.
 base_url = "http://birdnet.local"
 shoot = true
-shoot_title = "Avian Visitors"
-shoot_subtitle = "Heard Today"
+shoot_title = "Gefiederte Besucher"
+shoot_subtitle = "Heute gehört"
 rotate = 90          # flip to 270 if the frame hangs the other way up
 saturation = 0.6
 timeout = 45
