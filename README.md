@@ -34,7 +34,7 @@ Use [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Pick Raspberry
 
 - Username
 - WiFi SSID + password
-- Hostname: `birdnet`
+- Hostname: `birdie`
 - Enable SSH with password auth
 
 Plug the USB mic into the Pi. Place the capsule in a window or mount it outside. Boot.
@@ -46,13 +46,13 @@ Plug the USB mic into the Pi. Place the capsule in a window or mount it outside.
 Installer assumes passwordless sudo (Raspberry Pi OS Lite default - if you've tightened it, run `sudo raspi-config` -> *System Options* -> restore the default first).
 
 ```bash
-ssh <your-username>@birdnet.local
+ssh <your-username>@birdie.local
 curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | bash
 ```
 
 Clones this fork, installs BirdNET-Pi, symlinks the AvianVisitors overlay into the Caddy web root. Takes 20-40 minutes. Reboots when done.
 
-Collage: `http://birdnet.local/`. Stock BirdNET-Pi UI: `http://birdnet.local/index.php`. The menu button in the top right opens an admin overlay with settings, system, log, and tool panels.
+Collage: `http://birdie.local/`. Stock BirdNET-Pi UI: `http://birdie.local/index.php`. The menu button in the top right opens an admin overlay with settings, system, log, and tool panels.
 
 ---
 

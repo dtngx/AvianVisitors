@@ -71,10 +71,10 @@ create_necessary_dirs() {
   sudo -u ${USER} ln -fs $my_dir/homepage/* ${EXTRACTED}
   # AvianVisitors overlay. The avian/ symlink keeps assets + PHP shims
   # reachable at /avian/. The five frontend files at the EXTRACTED root
-  # make the collage the default index for http://birdnet.local/ -
+  # make the collage the default index for http://birdie.local/ -
   # the matching try_files override in update_caddyfile.sh teaches
   # php_fastcgi to prefer index.html over index.php at the root. The
-  # stock BirdNET-Pi UI stays reachable at http://birdnet.local/index.php
+  # stock BirdNET-Pi UI stays reachable at http://birdie.local/index.php
   # for anyone who wants to drop into the legacy admin pages.
   if [ -d $my_dir/avian ]; then
     sudo -u ${USER} ln -fs $my_dir/avian ${EXTRACTED}/avian

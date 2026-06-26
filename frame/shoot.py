@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Screenshot the live AvianVisitors collage for the e-ink frame.
 
-Loads the real site (the LAN default http://birdnet.local, or a forwarded
+Loads the real site (the LAN default http://birdie.local, or a forwarded
 public URL) at a portrait viewport, hides the controls, sets the frame
 titles, and rewrites a few of the page's own apt.js tunables at capture time
 (cluster bias, count-to-size exponent, a rare-bird floor). The result is the
@@ -218,7 +218,7 @@ def shoot(url, out, *, title=None, subtitle=None, vw=600, vh=800, dsf=2,
 
 def main():
     ap = argparse.ArgumentParser(description="Screenshot the AvianVisitors collage for the e-ink frame.")
-    ap.add_argument("--url", default="http://birdnet.local")
+    ap.add_argument("--url", default="http://birdie.local")
     ap.add_argument("--out", default="frame.png")
     ap.add_argument("--title")
     ap.add_argument("--subtitle")
