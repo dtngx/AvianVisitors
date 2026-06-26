@@ -4,7 +4,7 @@
 #
 # Three ways to feed the frame, pick one:
 #   ./install.sh                            mirror the BirdNET-Pi on your network
-#                                           (birdnet.local), rendered on this Pi
+#                                           (birdie.local), rendered on this Pi
 #   ./install.sh --image-url <URL>          fetch a ready-made frame PNG instead
 #                                           (e.g. a public Cloudflare Worker)
 #   ./install.sh --bird-weather --zip <ZIP> standalone from BirdWeather, no mic
@@ -116,8 +116,8 @@ elif [ "$MODE" = local ]; then
   cat > "$CONFIG" <<'CFG'
 # birdframe-mode: local
 # AvianVisitors frame, local mode: mirrors the BirdNET-Pi on your network.
-# This Pi screenshots birdnet.local itself, so there is nothing else to set up.
-base_url = "http://birdnet.local"
+# This Pi screenshots birdie.local itself, so there is nothing else to set up.
+base_url = "http://birdie.local"
 shoot = true
 shoot_title = "Avian Visitors"
 shoot_subtitle = "Heard Today"
@@ -184,7 +184,7 @@ case "$MODE" in
   local)
     cat <<DONE
 
-Installed. The frame mirrors birdnet.local on your network and refreshes every
+Installed. The frame mirrors birdie.local on your network and refreshes every
 15 min, only when the birds change. Until the mic has heard its first bird it
 shows a plain title card. If the panel hangs upside down, set rotate = 270 in
 ~/.birdframe/config.toml.

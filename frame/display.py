@@ -39,7 +39,7 @@ SPECTRA6 = [(236, 234, 223), (26, 26, 28), (165, 60, 56),
             (198, 176, 74), (49, 71, 130), (58, 110, 72)]
 
 DEFAULTS = {
-    "base_url": "http://birdnet.local",
+    "base_url": "http://birdie.local",
     "hours": 24,
     "image": "",            # local PNG written by the shooter
     "image_url": "",        # or a published screenshot URL
