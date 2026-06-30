@@ -47,7 +47,7 @@ Installer assumes passwordless sudo (Raspberry Pi OS Lite default - if you've ti
 
 ```bash
 ssh <your-username>@birdie.local
-curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | bash
+curl -s https://raw.githubusercontent.com/dtngx/AvianVisitors/avian-visitors/newinstaller.sh | bash
 ```
 
 Clones this fork, installs BirdNET-Pi, symlinks the AvianVisitors overlay into the Caddy web root. Takes 20-40 minutes. Reboots when done.
@@ -56,10 +56,10 @@ Clones this fork, installs BirdNET-Pi, symlinks the AvianVisitors overlay into t
 
 ```bash
 # as an argument
-curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | bash -s -- --hostname garten-pi
+curl -s https://raw.githubusercontent.com/dtngx/AvianVisitors/avian-visitors/newinstaller.sh | bash -s -- --hostname garten-pi
 
 # or as an environment variable
-curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | AV_HOSTNAME=garten-pi bash
+curl -s https://raw.githubusercontent.com/dtngx/AvianVisitors/avian-visitors/newinstaller.sh | AV_HOSTNAME=garten-pi bash
 ```
 
 The name must be a single DNS label: letters, digits and hyphens, no leading or trailing hyphen. After the reboot the Pi answers at `http://<hostname>.local/`.

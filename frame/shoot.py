@@ -33,7 +33,7 @@ from playwright.sync_api import sync_playwright
 
 # --bird-weather pulls cutouts straight from the repo's raw GitHub URLs, so the
 # Pi never bundles the illustration set and picks up new birds with no redeploy.
-RAW_ILLUSTRATIONS = ("https://raw.githubusercontent.com/Twarner491/AvianVisitors/"
+RAW_ILLUSTRATIONS = ("https://raw.githubusercontent.com/dtngx/AvianVisitors/"
                      "avian-visitors/avian/assets/illustrations/")
 
 # Hide the controls and the other views, freeze animations. Titles + collage
