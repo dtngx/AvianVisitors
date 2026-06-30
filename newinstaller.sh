@@ -25,6 +25,47 @@ if ! sudo -n true; then
     exit
 fi
 
+# --- Hostname selection ------------------------------------------------------
+# The collage is reached at http://<hostname>.local/ over mDNS, so the hostname
+# is how you tell several Pis apart on the same network. Pick it here instead of
+# baking it into each SD card. Priority:
+#   1. --hostname <name>  (curl ... | bash -s -- --hostname birdie)
+#   2. AV_HOSTNAME=<name> environment variable
+#   3. interactive prompt (when run from a terminal)
+#   4. the default below
+DEFAULT_HOSTNAME="birdie"
+AV_HOSTNAME="${AV_HOSTNAME:-}"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --hostname=*) AV_HOSTNAME="${1#*=}"; shift ;;
+    --hostname|-H)
+      [ $# -ge 2 ] || { echo "--hostname needs a value, e.g. --hostname birdie"; exit 1; }
+      AV_HOSTNAME="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
+# Prompt only if nothing was passed and a terminal is attached. Read from
+# /dev/tty so it still works when the script is piped in from curl (stdin is
+# the pipe, not the keyboard).
+if [ -z "$AV_HOSTNAME" ] && [ -t 1 ] && [ -e /dev/tty ]; then
+  printf 'Hostname for this Pi (reachable at http://<name>.local/) [%s]: ' "$DEFAULT_HOSTNAME" > /dev/tty
+  read -r AV_HOSTNAME < /dev/tty || AV_HOSTNAME=""
+fi
+AV_HOSTNAME="$(echo "${AV_HOSTNAME:-$DEFAULT_HOSTNAME}" | tr '[:upper:]' '[:lower:]')"
+
+# Validate as a single DNS label (RFC 1123): a-z, 0-9 and hyphens, no leading
+# or trailing hyphen, 1-63 chars. A bad value would otherwise break mDNS and
+# land in /etc/hosts verbatim.
+if ! echo "$AV_HOSTNAME" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'; then
+  echo "Invalid hostname: '$AV_HOSTNAME'."
+  echo "Use letters, digits and hyphens only (max 63 chars, no leading/trailing hyphen)."
+  exit 1
+fi
+export AV_HOSTNAME
+echo "This Pi will be set up as '${AV_HOSTNAME}', reachable at http://${AV_HOSTNAME}.local/"
+
 # Simple new installer
 HOME=$HOME
 USER=$USER
