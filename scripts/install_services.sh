@@ -24,9 +24,25 @@ install_depends() {
 }
 
 set_hostname() {
-  if [ "$(hostname)" == "raspberrypi" ];then
-    hostnamectl set-hostname birdnetpi
-    sed -i 's/raspberrypi/birdnetpi/g' /etc/hosts
+  # Operator-chosen hostname is passed through from newinstaller.sh as
+  # AV_HOSTNAME; it decides the http://<hostname>.local/ address. When it is
+  # unset (e.g. install_birdnet.sh run on its own) we keep the old behaviour
+  # of only renaming the stock "raspberrypi" image.
+  local new_host="${AV_HOSTNAME:-}"
+  local old_host
+  old_host="$(hostname)"
+
+  if [ -z "$new_host" ]; then
+    [ "$old_host" == "raspberrypi" ] && new_host="birdnetpi" || return 0
+  fi
+  [ "$new_host" == "$old_host" ] && return 0
+
+  hostnamectl set-hostname "$new_host"
+  # Point the loopback alias at the new name so the box can resolve itself.
+  if grep -qE '^127\.0\.1\.1[[:space:]]' /etc/hosts; then
+    sed -i -E "s/^(127\.0\.1\.1[[:space:]]+).*/\1${new_host}/" /etc/hosts
+  else
+    printf '127.0.1.1\t%s\n' "$new_host" >> /etc/hosts
   fi
 }
 

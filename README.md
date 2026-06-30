@@ -34,7 +34,7 @@ Use [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Pick Raspberry
 
 - Username
 - WiFi SSID + password
-- Hostname: `birdnet`
+- Hostname: `birdie` (optional - you can also choose it when running the installer, see below)
 - Enable SSH with password auth
 
 Plug the USB mic into the Pi. Place the capsule in a window or mount it outside. Boot.
@@ -46,13 +46,25 @@ Plug the USB mic into the Pi. Place the capsule in a window or mount it outside.
 Installer assumes passwordless sudo (Raspberry Pi OS Lite default - if you've tightened it, run `sudo raspi-config` -> *System Options* -> restore the default first).
 
 ```bash
-ssh <your-username>@birdnet.local
+ssh <your-username>@birdie.local
 curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | bash
 ```
 
 Clones this fork, installs BirdNET-Pi, symlinks the AvianVisitors overlay into the Caddy web root. Takes 20-40 minutes. Reboots when done.
 
-Collage: `http://birdnet.local/`. Stock BirdNET-Pi UI: `http://birdnet.local/index.php`. The menu button in the top right opens an admin overlay with settings, system, log, and tool panels.
+**Choosing the hostname.** The collage lives at `http://<hostname>.local/`, so give each Pi its own name. The installer asks for one (default `birdie`) when run from a terminal. To set it non-interactively - handy when building several Pis - pass it as an argument or an environment variable:
+
+```bash
+# as an argument
+curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | bash -s -- --hostname garten-pi
+
+# or as an environment variable
+curl -s https://raw.githubusercontent.com/Twarner491/AvianVisitors/avian-visitors/newinstaller.sh | AV_HOSTNAME=garten-pi bash
+```
+
+The name must be a single DNS label: letters, digits and hyphens, no leading or trailing hyphen. After the reboot the Pi answers at `http://<hostname>.local/`.
+
+Collage: `http://birdie.local/`. Stock BirdNET-Pi UI: `http://birdie.local/index.php`. The menu button in the top right opens an admin overlay with settings, system, log, and tool panels.
 
 ---
 
