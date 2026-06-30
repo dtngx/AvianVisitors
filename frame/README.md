@@ -53,7 +53,7 @@ cd AvianVisitors/frame
 Pick how the frame gets its birds:
 
 ```bash
-# Pair with your bird mic on the same network (birdnet.local). The default.
+# Pair with your bird mic on the same network (birdie.local). The default.
 ./install.sh
 
 # No microphone: draw the collage from BirdWeather for any ZIP code.
