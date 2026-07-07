@@ -158,7 +158,8 @@ def shoot(url, out, *, title=None, subtitle=None, vw=600, vh=800, dsf=2,
           headline_px=42, eyebrow_px=18, lowercase=False,
           mat=0.04, collage_vh=52, cluster_xbias=1.0, cluster_ybias=1.2,
           count_exp=0.4, cluster_pad=1, small_floor=0.04, window_hours=None,
-          timeout_ms=45000, user=None, password=None, species=None, cutout_base=None):
+          timeout_ms=45000, user=None, password=None, species=None, cutout_base=None,
+          cutout_local=None, empty_text="listening for birds…"):
     pad_side, pad_top, pad_bottom = int(vw * mat), int(vh * mat * 0.92), int(vh * mat)
     auth = "Basic " + base64.b64encode(f"{user}:{password or ''}".encode()).decode() if user else None
 
@@ -197,6 +198,17 @@ def shoot(url, out, *, title=None, subtitle=None, vw=600, vh=800, dsf=2,
                         timeout=timeout_ms)
                 except PWTimeout:
                     print("some illustrations did not finish loading; capturing anyway", file=sys.stderr)
+            elif page.query_selector(".nest-img") is not None:
+                # Birdless empty state: wait for the nest illustration to load so
+                # the frame never captures a blank collage area.
+                try:
+                    page.wait_for_function(
+                        "() => { const n=document.querySelector('.nest-img');"
+                        " return n && n.complete && n.naturalWidth>0; }",
+                        timeout=timeout_ms)
+                except PWTimeout:
+                    print("nest illustration did not finish loading; capturing anyway", file=sys.stderr)
+                    
             if misses:
                 raise RuntimeError(f"apt.js tunables not found ({len(misses)}); refusing to ship a half-tuned frame")
 
@@ -204,16 +216,42 @@ def shoot(url, out, *, title=None, subtitle=None, vw=600, vh=800, dsf=2,
                 page.evaluate("t=>{const e=document.querySelector('.static-head .pre'); if(e)e.textContent=t;}", title)
             if subtitle is not None:
                 page.evaluate("s=>{const e=document.querySelector('.static-head h1'); if(e)e.textContent=s;}", subtitle)
-            # Soften the empty-state line for a fresh frame whose mic hasn't
-            # heard a bird yet, and darken it so it survives the e-ink dither and
-            # the matting step's ink detection (a no-op once there are birds).
-            page.evaluate("() => { const e = document.querySelector('.empty'); if (e) { e.textContent = 'listening for birds…'; e.style.color = '#555'; } }")
+            # Set the empty-state line for a birdless frame (the mic hasn't heard
+            # anything yet, or BirdWeather has no recent detections nearby) and
+            # darken it so it survives the e-ink dither and the matting step's ink
+            # detection (a no-op once there are birds).
+            page.evaluate("(t) => { const e = document.querySelector('.empty'); if (e) { e.textContent = t; e.style.color = '#555'; } }", empty_text)
             page.wait_for_timeout(250)
             # clip is CSS px; device_scale_factor scales the PNG to vw*dsf by vh*dsf = 1200x1600
             page.screenshot(path=out, clip={"x": 0, "y": 0, "width": vw, "height": vh})
         finally:
             browser.close()
     return out
+
+def shoot_birdweather(out, species, *, title=None, subtitle=None, timeout_ms=45000, **look):
+    """Render `species` ([{sci,com,n}]) as the BirdWeather collage into `out`.
+
+    The mic path screenshots a live site; this builds the same page from a
+    species list instead. It serves the bundled frontend on localhost, feeds it
+    the species, and routes cutouts to the local clone first then GitHub, so the
+    --bird-weather CLI and display.py's inline render share one setup. An empty
+    list renders the page's empty-state card, the same as the mic mode. `look`
+    overrides any shoot() tunable (the CLI passes its flags through)."""
+    if species is None:
+        raise RuntimeError("shoot_birdweather needs a species list")
+    here = os.path.dirname(os.path.abspath(__file__))
+    _httpd, port = _serve_frontend(os.path.join(here, "..", "avian", "frontend"))
+    cutout_local = os.path.join(here, "..", "avian", "assets", "illustrations")
+    # BirdWeather's flat 7-day counts need a steeper exponent for the same hero
+    # hierarchy; the slightly smaller titles match the mic frame's optical weight.
+    # A birdless BirdWeather frame says "no recent detections nearby", not "listening".
+    for k, v in (("count_exp", 1.0), ("headline_px", 39), ("eyebrow_px", 17),
+                 ("empty_text", "no recent detections nearby")):
+        look.setdefault(k, v)
+    return shoot(f"http://127.0.0.1:{port}/", out,
+                 title=title or "Avian Visitors", subtitle=subtitle or "Heard Today",
+                 species=species, cutout_base=RAW_ILLUSTRATIONS, cutout_local=cutout_local,
+                 timeout_ms=timeout_ms, **look)
 
 
 def main():

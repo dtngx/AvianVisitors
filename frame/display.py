@@ -163,7 +163,7 @@ def _centroid_x(img, paper):
 TITLE_H_FRAC, COLLAGE_FRAC, GAP_FRAC = 0.065, 0.66, 0.1
 
 
-def mat_and_center(img, mat, empty=False):
+def mat_and_center(img, mat):
     """Crop the title and collage, size each to a fraction of the A5 opening,
     stack with a gap, and centre on the panel."""
     img = img.convert("RGB")
@@ -190,20 +190,6 @@ def mat_and_center(img, mat, empty=False):
     tb = _region_bbox(img, paper, top, split[0]) if split else None
     cb = _region_bbox(img, paper, split[1], bot + 1) if split else None
     box_w, box_h = A5_W * (1 - mat), A5_H * (1 - mat)
-    # No birds: the content under the title is just the one-line empty-state
-    # note. Render a calm title card (a modest title with the small note
-    # below) rather than blowing the lone title up to fill the opening.
-    if empty and tb and cb:
-        title = _scale_h(img.crop(tb), box_h * TITLE_H_FRAC)
-        note = _scale_w(img.crop(cb), box_w * 0.30)
-        gap = round(box_h * 0.05)
-        cw = max(title.width, note.width)
-        comp = Image.new("RGB", (cw, title.height + gap + note.height), paper)
-        comp.paste(title, ((cw - title.width) // 2, 0))
-        comp.paste(note, ((cw - note.width) // 2, title.height + gap))
-        canvas = Image.new("RGB", (PANEL_W, PANEL_H), paper)
-        canvas.paste(comp, ((PANEL_W - comp.width) // 2, (PANEL_H - comp.height) // 2))
-        return canvas
     if not (tb and cb):
         return _place(img.crop(full), paper, mat)
     title = _scale_h(img.crop(tb), box_h * TITLE_H_FRAC)
@@ -342,7 +328,7 @@ def run(cfg, preview=None, force=False, use_signature=True, mat_box=False):
     except Exception as e:
         print(f"could not get image: {e}", file=sys.stderr)  # keep last panel image
         return
-    img = mat_and_center(img, cfg["mat"], empty=(species == []))
+    img = mat_and_center(img, cfg["mat"])
     if preview:
         out = quantize_spectra6(img)
         if mat_box:
