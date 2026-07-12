@@ -21,7 +21,7 @@ fi
 
 #Install/Configure /etc/birdnet/birdnet.conf
 ./install_config.sh || exit 1
-sudo -E HOME=$HOME USER=$USER AV_HOSTNAME="${AV_HOSTNAME:-}" ./install_services.sh || exit 1
+sudo -E HOME=$HOME USER=$USER AV_HOSTNAME="${AV_HOSTNAME:-}" AV_LOW_RAM="${AV_LOW_RAM:-0}" ./install_services.sh || exit 1
 source /etc/birdnet/birdnet.conf
 
 install_birdnet() {

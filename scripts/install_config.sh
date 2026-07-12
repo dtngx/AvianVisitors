@@ -59,9 +59,10 @@ BIRDWEATHER_ID=
 #_________________Tools, System Links, and the Processed files ________________#
 
 ## CADDY_PWD is the plaintext password (that will be hashed) and used to access
-## certain parts of the web interface
+## certain parts of the web interface. Seeded from AV_ADMIN_PWD when the
+## installer prompted for one; empty means the web interface stays open.
 
-CADDY_PWD=
+CADDY_PWD="${AV_ADMIN_PWD:-}"
 
 #-------------------------  Live Audio Stream  --------------------------------#
 #_____________The variable below configures/enables the live___________________#

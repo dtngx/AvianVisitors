@@ -2321,23 +2321,81 @@
     if (s < 86400) return Math.round(s / 3600) + 'h';
     return Math.round(s / 86400) + 'd';
   }
-  // Admin endpoints rely on the session cookie set by /api/auth/login -
-  // no Authorization header needed (and nothing sensitive in JS-readable
-  // storage). credentials: 'same-origin' is the default but spelled out
-  // for clarity.
+  // Admin API calls carry no explicit Authorization header: once the user has
+  // unlocked (see requireAdminAuth below) the browser has cached the Basic
+  // credentials that Caddy's basic_auth on /avian/api/config.php +
+  // birdnet-status.php validates, and re-sends them on every same-origin
+  // request. On an install with no admin password those paths are ungated and
+  // this just works without a prompt.
   function adminApi(url) {
     return fetch(url, { credentials: 'same-origin', cache: 'no-store' });
   }
+
+  // Gate the four admin sub-pages behind the admin password. The drawer menu
+  // (menu.php) and the collage stay open on purpose - only these pages prompt.
+  // We probe the gated status endpoint: 200 => ungated (no password) or already
+  // authed, render straight through; 401 => show a password form and retry with
+  // a Basic header. A successful 200 makes the browser cache the credentials
+  // for the subsequent config.php / birdnet-status.php calls. This reuses the
+  // same cached-Basic-cred trick as the drawer unlock flow.
+  var adminAuthed = false;
+  var ADMIN_PROBE = './avian/api/birdnet-status.php?action=services';
+  function requireAdminAuth(onOk) {
+    if (adminAuthed) { onOk(); return; }
+    adminBody.innerHTML = '<p style="font:11px ui-monospace,monospace;color:var(--ink-soft);text-align:center;margin-top:32px">checking access...</p>';
+    fetch(ADMIN_PROBE, { credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 200) { adminAuthed = true; onOk(); }
+        else if (r.status === 401) { renderAdminLock(onOk); }
+        else { adminBody.innerHTML = adminUnreachableHtml('auth check HTTP ' + r.status); }
+      })
+      .catch(function () { adminBody.innerHTML = adminUnreachableHtml('unreachable'); });
+  }
+  function renderAdminLock(onOk, errMsg) {
+    adminBody.innerHTML =
+      '<form id="adminUnlock" class="lock-row" style="flex-direction:column;gap:10px;max-width:320px;margin:40px auto 0;">'
+      + '<input id="adminPass" type="password" placeholder="Passwort" autocomplete="current-password" style="width:100%">'
+      + '<button type="submit">Freischalten</button>'
+      + '<p id="adminLockHint" class="lock-hint' + (errMsg ? ' lock-err' : '') + '">'
+      +   adminEsc(errMsg || 'Passwort eingeben, um diese Seite freizuschalten.') + '</p>'
+      + '</form>';
+    var form = document.getElementById('adminUnlock');
+    var input = document.getElementById('adminPass');
+    setTimeout(function () { input.focus(); }, 50);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      // Default user matches BirdNET-Pi's Caddyfile basicauth user; override
+      // via window.AV_AUTH_USER if a custom Caddyfile changed it.
+      var u = (window.AV_AUTH_USER || 'birdnet');
+      var hdr = 'Basic ' + btoa(u + ':' + input.value);
+      fetch(ADMIN_PROBE, {
+        method: 'GET',
+        headers: { 'Authorization': hdr },
+        credentials: 'same-origin',
+        cache: 'no-store',
+      }).then(function (r) {
+        if (r.status === 200) { adminAuthed = true; onOk(); }
+        else if (r.status === 401) { renderAdminLock(onOk, 'Falsches Passwort.'); }
+        else { renderAdminLock(onOk, 'Authentifizierung nicht verfügbar.'); }
+      }).catch(function () { renderAdminLock(onOk, 'Netzwerkfehler.'); });
+    });
+  }
+
   function openAdmin(section) {
     document.body.classList.add('admin-on');
     adminEl.setAttribute('aria-hidden', 'false');
     adminTitle.textContent = ADMIN_TITLES[section] || section;
     if (adminPollT) { clearInterval(adminPollT); adminPollT = null; }
     adminSect = section;
-    if (section === 'settings') renderAdminSettings();
-    else if (section === 'system') renderAdminSystem();
-    else if (section === 'logs') renderAdminLogs();
-    else if (section === 'tools') renderAdminTools();
+    requireAdminAuth(function () {
+      // The overlay may have been closed or switched while the probe was in
+      // flight - only render if we're still on this section.
+      if (adminSect !== section) return;
+      if (section === 'settings') renderAdminSettings();
+      else if (section === 'system') renderAdminSystem();
+      else if (section === 'logs') renderAdminLogs();
+      else if (section === 'tools') renderAdminTools();
+    });
   }
   function closeAdmin() {
     document.body.classList.remove('admin-on');
