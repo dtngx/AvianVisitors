@@ -44,7 +44,10 @@ def _load_settings(settings_path='/etc/birdnet/birdnet.conf', force_reload=False
     global _settings
     if _settings is None or force_reload:
         with open(settings_path) as f:
-            parser = PHPConfigParser(interpolation=None)
+            # strict=False so a duplicate key (e.g. a settings writer appending
+            # instead of replacing) resolves to last-value-wins rather than
+            # raising DuplicateOptionError and crash-looping the service.
+            parser = PHPConfigParser(interpolation=None, strict=False)
             # preserve case
             parser.optionxform = lambda option: option
             lines = chain(("[top]",), f)
