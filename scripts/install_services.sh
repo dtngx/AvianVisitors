@@ -508,6 +508,14 @@ install_services() {
   configure_caddy_php
   config_icecast
   USER=$USER HOME=$HOME ${my_dir}/scripts/createdb.sh
+
+  # Low-RAM Pi: the livestream + stats (streamlit) services are the biggest
+  # memory hogs and are optional. Disable them permanently (survives reboot);
+  # re-enable later with `systemctl enable --now <unit>`.
+  if [ "${AV_LOW_RAM:-0}" = "1" ]; then
+    echo "Low-RAM mode: disabling livestream + birdnet_stats services"
+    systemctl disable --now birdnet_stats.service livestream.service 2>/dev/null || true
+  fi
 }
 
 if [ -f ${config_file} ];then

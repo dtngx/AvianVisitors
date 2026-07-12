@@ -44,6 +44,16 @@ http:// ${BIRDNETPI_URL} {
   basicauth /terminal* {
     birdnet ${HASHWORD}
   }
+  # AvianVisitors admin sub-pages only: settings (config.php) and
+  # system/logs/tools (birdnet-status.php). The collage, its data endpoints
+  # (birdnet-api.php, cutout.php, wiki.php, recording.php, spectrogram.php)
+  # and the drawer menu (menu.php) stay open on purpose.
+  basicauth /avian/api/config.php {
+    birdnet ${HASHWORD}
+  }
+  basicauth /avian/api/birdnet-status.php {
+    birdnet ${HASHWORD}
+  }
   reverse_proxy /stream localhost:8000
   # AvianVisitors overlay drops an index.html alongside BirdNET-Pi's
   # index.php. The default try_files for php_fastcgi prefers index.php
